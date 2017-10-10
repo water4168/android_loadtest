@@ -1,5 +1,10 @@
 #/usr/bin/python
 #encoding:utf-8
+'''
+每次上传各大应用市场，都要加固打包二十多个apk!
+这个脚本自动化了 安装/打开运行/卸载的动作！
+后面再加上多进程，实现locat,高效跑动！
+'''
 import csv
 import os
 import time
