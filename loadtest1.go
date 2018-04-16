@@ -5,11 +5,12 @@ import "github.com/myzhan/boomer"
 import (
 	"time"
 	"net/http"
-	"log"
+	//"log"
 	"encoding/json"
 	"math/rand"
 	"fmt"
 	"bytes"
+	"io/ioutil"
 )
 
 
@@ -49,25 +50,33 @@ func test_ethbalance() {
 	}
 	reader := bytes.NewReader(bytesData)
 
-	client := &http.Client{}
-	req, err := http.NewRequest("POST","http://47.254.26.164:80/api/wallet/eth_getBalance",  reader)
+	req, err := http.NewRequest("POST", "http://47.254.26.164:80/api/wallet/eth_getBalance", reader)
+
 	if err != nil {
 		fmt.Println(err.Error())
+		fmt.Println(string(bytesData))
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJyYW5kb21LZXkiOiJveDc1NDUiLCJzdWIiOiIxNSIsImlhdCI6MTUyMjU3Mzg5Mn0.hPwsslcNvRbqsYIGGW68wv1_Q5U1UR7nHEhpK1z5x2MAN-Yre0xREbKPnCBAG2iKF2Ev0jcfl41fAb_rptkzcA")
 	req.Header.Set("User-Agent", "Project/1.0 (m-chain-001; build:1; iOS 10.2.1) Alamofire/4.7.0")
 
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
 
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
 	endTime := now()
-	log.Println(float64(endTime - startTime))
+
 	if err != nil {
 		boomer.Events.Publish("request_failure", "demo", "http", 0.0, err.Error())
 	}else {
 		boomer.Events.Publish("request_success", "demo", "http", float64(endTime - startTime), resp.ContentLength)
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(body))
+
 	}
+
 }
 
 
@@ -90,4 +99,4 @@ func main() {
 
 }
 
-//https://www.cnblogs.com/hitfire/articles/6427033.html
+
