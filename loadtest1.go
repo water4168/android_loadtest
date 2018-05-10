@@ -7,10 +7,11 @@ import (
 	"net/http"
 	//"log"
 	"encoding/json"
-	"math/rand"
 	"fmt"
 	"bytes"
 	"io/ioutil"
+	"math/rand"
+	"net"
 )
 
 
@@ -50,8 +51,7 @@ func test_ethbalance() {
 	}
 	reader := bytes.NewReader(bytesData)
 
-	req, err := http.NewRequest("POST", "http://47.254.26.164:80/api/wallet/eth_getBalance", reader)
-
+	req, err := http.NewRequest("POST", "https://api.mybitt.org:4443/api/wallet/eth_getBalance", reader)
 	if err != nil {
 		fmt.Println(err.Error())
 		fmt.Println(string(bytesData))
@@ -60,23 +60,40 @@ func test_ethbalance() {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJyYW5kb21LZXkiOiJveDc1NDUiLCJzdWIiOiIxNSIsImlhdCI6MTUyMjU3Mzg5Mn0.hPwsslcNvRbqsYIGGW68wv1_Q5U1UR7nHEhpK1z5x2MAN-Yre0xREbKPnCBAG2iKF2Ev0jcfl41fAb_rptkzcA")
 	req.Header.Set("User-Agent", "Project/1.0 (m-chain-001; build:1; iOS 10.2.1) Alamofire/4.7.0")
+	req.Header.Set("Connection", "keep-alive")
 
+	client := &http.Client{
+		Transport: &http.Transport{
+			Dial: func(netw, addr string) (net.Conn, error) {
+				deadline := time.Now().Add(30 * time.Second)
+				c, err := net.DialTimeout(netw, addr, time.Second*30)
+				if err != nil {
+					return nil, err
+				}
+				c.SetDeadline(deadline)
+				return c, nil
+			},
+		},
+	}
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
-
-	defer resp.Body.Close()
+	//defer resp.Body.Close()
 	endTime := now()
 
 	if err != nil {
-		boomer.Events.Publish("request_failure", "demo", "http", 0.0, err.Error())
+		resp.Body.Close()
+		boomer.Events.Publish("request_failure", "demo", "https", 0.0, err.Error())
 	}else {
-		boomer.Events.Publish("request_success", "demo", "http", float64(endTime - startTime), resp.ContentLength)
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body))
+		boomer.Events.Publish("request_success", "demo", "https", float64(endTime - startTime), resp.ContentLength)
 
+		body, err:= ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println(err.Error())
+		}else {
+			fmt.Println(string(body))
+		}
 	}
-
+	defer resp.Body.Close()
 }
 
 
@@ -85,18 +102,14 @@ func main() {
 	task := &boomer.Task{
 		// Weight 权重，和 Locust 的 task 权重类似，在有多个 task 的时候生效
 		// FIXED: 之前误写为Weith
-		Weight: 10,
-		// Fn 类似于 Locust 的 task
+		Weight: 1,
 		Fn: test_ethbalance,
 	}
-
-	/*
-	通知 boomer 去执行自定义函数，支持多个
-	boomer.Run(task1, task2, task3)
-	*/
 
 	boomer.Run(task)
 
 }
 
-
+//locust -f dummy.py --master --master-bind-host=127.0.0.1 --master-bind-port=5557
+////go build -o a.out main.go
+//./a.out --master-host=127.0.0.1 --master-port=5557 --rpc=zeromq
