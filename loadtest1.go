@@ -81,17 +81,16 @@ func test_ethbalance() {
 	endTime := now()
 
 	if err != nil {
-		resp.Body.Close()
 		boomer.Events.Publish("request_failure", "demo", "https", 0.0, err.Error())
 	}else {
 		boomer.Events.Publish("request_success", "demo", "https", float64(endTime - startTime), resp.ContentLength)
-
 		body, err:= ioutil.ReadAll(resp.Body)
 		if err != nil {
 			fmt.Println(err.Error())
 		}else {
 			fmt.Println(string(body))
 		}
+		resp.Body.Close()
 	}
 
 }
