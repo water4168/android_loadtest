@@ -93,7 +93,7 @@ func test_ethbalance() {
 			fmt.Println(string(body))
 		}
 	}
-	defer resp.Body.Close()
+
 }
 
 
