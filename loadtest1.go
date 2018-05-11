@@ -51,7 +51,7 @@ func test_ethbalance() {
 	}
 	reader := bytes.NewReader(bytesData)
 
-	req, err := http.NewRequest("POST", "https://api.mybitt.org:4443/api/wallet/eth_getBalance", reader)
+	req, err := http.NewRequest("POST", "https://x", reader)
 	if err != nil {
 		fmt.Println(err.Error())
 		fmt.Println(string(bytesData))
