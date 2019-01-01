@@ -1,0 +1,45 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+import time
+import webbrowser
+import pyautogui as pag
+
+
+#设置本地浏览器路径，并注册到webbrowser中
+chromePath = 'C:\\my_system_tools\\Google\\Chrome\\Application\\chrome.exe'
+sanliulingPath = 'C:\\Users\\49451\\AppData\\Roaming\\360se6\\Application\\360se.exe'
+qqbrowserPath = "C:\\Program Files\\Tencent\\QQBrowser\\QQBrowser.exe"
+IePath = "C:\\Program Files\\Internet Explorer\\iexplore.exe"
+
+webbrowser.register('360browser', None,  webbrowser.BackgroundBrowser(sanliulingPath))
+webbrowser.register('chrome', None,  webbrowser.BackgroundBrowser(chromePath))
+webbrowser.register('qqbrowser', None,  webbrowser.BackgroundBrowser(qqbrowserPath))
+webbrowser.register('Ie', None,  webbrowser.BackgroundBrowser(IePath))
+
+
+
+
+#构建一个浏览器类，用来打开网页，滚动，截屏保存！
+class OneBrowser:
+    def __init__(self, bname, burl):
+        self.bname = bname
+        self.burl = burl
+
+    def open(self, scroll_num):
+        webbrowser.get(self.bname).open(self.burl)
+        time.sleep(10)
+        for i in range(scroll_num):
+            pag.screenshot('C:\\Users\\49451\\Desktop\\screenshots\\%s_%s.jpeg'%(self.bname, i)) #这里填写截图保存路径
+            pag.hotkey('pagedown')
+            time.sleep(1)
+        pag.hotkey('alt', 'f4')
+
+
+if __name__ == "__main__":
+
+    pag.PAUSE = 1.5
+    browser_list= ['360browser','chrome','qqbrowser','Ie']
+    
+    for browser in browser_list:
+        b = OneBrowser(browser, 'http://www.pingan.com')
+        b.open(5)
